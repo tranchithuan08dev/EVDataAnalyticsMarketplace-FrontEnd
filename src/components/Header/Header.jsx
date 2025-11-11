@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from 'antd';
 import { MenuOutlined, CloseOutlined } from '@ant-design/icons';
+import './Header.css';
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -16,18 +17,19 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'header-scrolled py-3' : 'py-5'
+      className={`app-header fixed top-0 left-0 right-0 z-50 transition-all ${
+        scrolled ? 'scrolled' : ''
       }`}
-      style={{ transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}
+      role="banner"
+      aria-expanded={mobileMenu}
     >
       <div className="container d-flex justify-content-between align-items-center">
         <div className="d-flex align-items-center">
-          <h3 className="mb-0 fw-bold text-green">EV DataHub</h3>
+          <h3 className="mb-0 fw-bold brand">EV DataHub</h3>
         </div>
 
         {/* Desktop Menu */}
-        <nav className="d-none d-lg-flex gap-4 align-items-center">
+        <nav className="d-none d-lg-flex gap-4 align-items-center desktop-nav">
           <a href="#features" className="text-dark text-decoration-none fw-medium">Tính năng</a>
           <a href="#categories" className="text-dark text-decoration-none fw-medium">Danh mục</a>
           <a href="#how-it-works" className="text-dark text-decoration-none fw-medium">Hoạt động</a>
@@ -40,26 +42,20 @@ export default function Header() {
 
         {/* Mobile Toggle */}
         <button
-          className="d-lg-none btn btn-link text-dark"
+          className="d-lg-none toggle-btn btn btn-link"
           onClick={() => setMobileMenu(!mobileMenu)}
+          aria-label={mobileMenu ? 'Đóng menu' : 'Mở menu'}
         >
-          {mobileMenu ? <CloseOutlined style={{ fontSize: 24 }} /> : <MenuOutlined style={{ fontSize: 24 }} />}
+          {mobileMenu ? <CloseOutlined style={{ fontSize: 22 }} /> : <MenuOutlined style={{ fontSize: 22 }} />}
         </button>
       </div>
 
       {/* Mobile Menu */}
       <div
-        className={`position-fixed top-0 start-0 end-0 bg-white shadow-lg transition-all duration-500 ${
-          mobileMenu ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
-        }`}
-        style={{
-          top: '70px',
-          height: mobileMenu ? 'auto' : '0',
-          overflow: 'hidden',
-          zIndex: 49,
-        }}
+        className={`mobile-menu position-fixed start-0 end-0 ${mobileMenu ? 'open' : ''}`}
+        style={{ top: '72px', zIndex: 49 }}
       >
-        <div className="container py-4">
+        <div className="container py-3">
           <a href="#features" className="d-block py-2 text-dark">Tính năng</a>
           <a href="#categories" className="d-block py-2 text-dark">Danh mục</a>
           <a href="#how-it-works" className="d-block py-2 text-dark">Hoạt động</a>
