@@ -1,68 +1,85 @@
+@import 'antd/dist/reset.css';
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+  --primary-green: #22c55e;
+  --primary-green-hover: #16a34a;
+  --light-gray: #f8f9fa;
+  --dark-text: #1f2937;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #fff;
+  color: var(--dark-text);
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+.section-padding {
+  padding: 80px 0;
 }
 
-button {
+.text-green {
+  color: var(--primary-green);
+}
+
+.btn-primary-custom {
+  background-color: var(--primary-green);
+  border-color: var(--primary-green);
   border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  padding: 10px 24px;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+.btn-primary-custom:hover {
+  background-color: var(--primary-green-hover);
+  border-color: var(--primary-green-hover);
+  transform: translateY(-2px);
+}
+
+.header-scrolled {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* ============================================= */
+/* BỎ GẠCH CHÂN TRÊN TẤT CẢ CÁC LINK (a) - CHỈ MỘT LẦN */
+/* ============================================= */
+a,
+a:hover,
+a:focus,
+a:active {
+  text-decoration: none !important;
+}
+
+header a,
+header a:hover,
+header a:focus,
+header a:active {
+  text-decoration: none !important;
+}
+
+.ant-btn-link,
+.ant-btn-link:hover {
+  text-decoration: none !important;
+}
+
+@media (min-width: 992px) {
+  #how-it-works .ant-card {
+    transition: all 0.35s ease;
   }
-  a:hover {
-    color: #747bff;
+
+  #how-it-works .ant-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 40px rgba(34, 197, 94, 0.22) !important;
   }
-  button {
-    background-color: #f9f9f9;
+
+  #how-it-works .anticon-arrow-right {
+    transition: transform 0.3s ease;
+  }
+
+  #how-it-works .anticon-arrow-right:hover {
+    transform: translateX(8px) !important;
   }
 }
