@@ -5,6 +5,8 @@ import MarketplaceStats from '../../components/Home/MarketplaceStats.jsx';
 import DataCategories from '../../components/Home/DataCategories.jsx';
 import Footer from '../../components/Footer/Footer.jsx';
 import HowItWorks from '../../components/Home/HowItWorks.jsx';
+import Testimonials from '../../components/Home/Testimonials.jsx';
+import FinalCTA from '../../components/Home/FinalCTA.jsx';
 
 export default function HomePage() {
   return (
@@ -15,6 +17,8 @@ export default function HomePage() {
       <HowItWorks />
       <MarketplaceStats />
       <DataCategories />
+      <Testimonials />
+      <FinalCTA />
       <Footer />
     </>
   );

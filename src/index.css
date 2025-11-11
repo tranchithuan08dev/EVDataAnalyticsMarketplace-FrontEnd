@@ -43,9 +43,6 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* ============================================= */
-/* BỎ GẠCH CHÂN TRÊN TẤT CẢ CÁC LINK (a) - CHỈ MỘT LẦN */
-/* ============================================= */
 a,
 a:hover,
 a:focus,
@@ -82,4 +79,50 @@ header a:active {
   #how-it-works .anticon-arrow-right:hover {
     transform: translateX(8px) !important;
   }
+}
+
+.hero-parallax {
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+/* Wave dưới Hero */
+.wave-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 150px;
+  background: white;
+  clip-path: ellipse(120% 60% at 50% 100%);
+}
+
+/* Section alternate background */
+section:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+footer a {
+  transition: opacity 0.3s ease;
+}
+
+footer a.hover-opacity-100:hover {
+  opacity: 1 !important;
+  color: #22c55e !important;
+}
+
+#data-categories .ant-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(34, 197, 94, 0.15) !important;
+}
+
+/* Đảm bảo icon emoji căn giữa */
+#data-categories .ant-card .fs-2 {
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
 }

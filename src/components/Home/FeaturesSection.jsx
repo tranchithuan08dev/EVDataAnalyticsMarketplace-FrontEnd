@@ -13,7 +13,11 @@ const features = [
 ];
 
 export default function FeaturesSection() {
-  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
+  const [ref, inView] = useInView({ 
+    triggerOnce: false, 
+    threshold: 0.3,
+    rootMargin: '0px 0px -100px 0px'
+  });
 
   return (
     <section id="features" className="section-padding bg-light">

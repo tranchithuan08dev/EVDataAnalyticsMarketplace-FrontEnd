@@ -11,7 +11,11 @@ const steps = [
 ];
 
 export default function HowItWorks() {
-  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.2 });
+  const [ref, inView] = useInView({ 
+    triggerOnce: false, 
+    threshold: 0.3,
+    rootMargin: '0px 0px -100px 0px'
+  });
 
   return (
     <section id="how-it-works" className="section-padding bg-light">
