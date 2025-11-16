@@ -95,10 +95,10 @@
 
 /* ensure header content sits above page content nicely */
 .app-header + * {
-  margin-top: 92px;
+  margin-top: 60px;
 }
 
 /* responsive tweak */
 @media (max-width: 991px) {
-  .app-header + * { margin-top: 82px; }
+  .app-header + * { margin-top: 50px; }
 }
