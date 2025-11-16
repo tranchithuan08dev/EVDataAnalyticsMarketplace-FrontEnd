@@ -1,0 +1,287 @@
+/* White + green theme, compact and polished layout */
+
+.data-provider-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #ffffff 0%, #f6fbf8 100%);
+  padding: 32px 20px;
+  color: #0f1720;
+  display: flex;
+  justify-content: center;
+}
+
+/* center content with comfortable width */
+.data-provider-page .content-wrap {
+  width: 100%;
+  max-width: 1180px;
+}
+
+/* Page title */
+.page-title {
+  color: #047857;
+  font-size: 1.6rem;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+.page-title-icon {
+  font-size: 1.25rem;
+  color: #047857;
+}
+
+/* Cards */
+.filter-card, .list-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(4,120,87,0.06);
+  box-shadow: 0 6px 20px rgba(4,120,87,0.04);
+  margin-bottom: 20px;
+}
+
+.filter-card .ant-card-head,
+.list-card .ant-card-head {
+  border-bottom: 1px dashed rgba(4,120,87,0.06);
+  padding: 12px 20px;
+  background: linear-gradient(90deg, rgba(4,120,87,0.02), rgba(4,120,87,0.00));
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.card-title {
+  color: #065f46;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* search input and selects */
+.search-input .ant-input {
+  border-radius: 10px;
+  border: 1px solid rgba(4,120,87,0.12);
+}
+.search-input .ant-input-affix-wrapper {
+  border-radius: 10px;
+}
+.select-control .ant-select-selector {
+  border-radius: 10px;
+}
+
+/* reset button */
+.btn-reset {
+  width: 100%;
+  margin-top: 8px;
+  background: transparent;
+  border: 1px solid rgba(4,120,87,0.08);
+  color: #065f46;
+  border-radius: 10px;
+  transition: all 180ms ease;
+}
+.btn-reset:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(4,120,87,0.06);
+}
+
+/* table styles */
+.providers-table .ant-table {
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+}
+.providers-table .ant-table-thead > tr > th {
+  background: rgba(4,120,87,0.03);
+  color: #065f46;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(4,120,87,0.06);
+}
+.providers-table .ant-table-tbody > tr > td {
+  vertical-align: middle;
+  padding: 14px 16px;
+}
+.providers-table .ant-table-tbody > tr:hover > td {
+  background: rgba(4,120,87,0.03);
+}
+
+/* tag tweaks */
+.providers-table .ant-tag {
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+/* small count highlight */
+.list-card .count {
+  color: #065f46;
+  font-weight: 700;
+}
+
+/* loading screen */
+.loading-screen {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+/* responsive tweaks */
+@media (max-width: 768px) {
+  .page-title { font-size: 1.25rem; }
+  .filter-card .ant-card-body, .list-card .ant-card-body { padding: 12px; }
+}
+
+/* minor polish for links inside table */
+.providers-table a {
+  color: #046c4f;
+  text-decoration: none;
+}
+.providers-table a:hover {
+  text-decoration: underline;
+}
+
+/* ensure cards don't feel cramped */
+.filter-card .ant-row, .filter-card .ant-form-item {
+  margin-bottom: 8px;
+}
+
+.data-provider-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #ffffff 0%, #f6fbf8 100%);
+  padding: 32px 20px;
+  color: #0f1720;
+  display: flex;
+  justify-content: center;
+}
+
+/* center content with comfortable width */
+.data-provider-page .content-wrap {
+  width: 100%;
+  max-width: 1180px;
+}
+
+/* Page title */
+.page-title {
+  color: #047857;
+  font-size: 1.6rem;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+.page-title-icon {
+  font-size: 1.25rem;
+  color: #047857;
+}
+
+/* Cards */
+.filter-card, .list-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(4,120,87,0.06);
+  box-shadow: 0 6px 20px rgba(4,120,87,0.04);
+  margin-bottom: 20px;
+}
+
+.filter-card .ant-card-head,
+.list-card .ant-card-head {
+  border-bottom: 1px dashed rgba(4,120,87,0.06);
+  padding: 12px 20px;
+  background: linear-gradient(90deg, rgba(4,120,87,0.02), rgba(4,120,87,0.00));
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.card-title {
+  color: #065f46;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* search input and selects */
+.search-input .ant-input {
+  border-radius: 10px;
+  border: 1px solid rgba(4,120,87,0.12);
+}
+.search-input .ant-input-affix-wrapper {
+  border-radius: 10px;
+}
+.select-control .ant-select-selector {
+  border-radius: 10px;
+}
+
+/* reset button */
+.btn-reset {
+  width: 100%;
+  margin-top: 8px;
+  background: transparent;
+  border: 1px solid rgba(4,120,87,0.08);
+  color: #065f46;
+  border-radius: 10px;
+  transition: all 180ms ease;
+}
+.btn-reset:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(4,120,87,0.06);
+}
+
+/* table styles */
+.providers-table .ant-table {
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+}
+.providers-table .ant-table-thead > tr > th {
+  background: rgba(4,120,87,0.03);
+  color: #065f46;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(4,120,87,0.06);
+}
+.providers-table .ant-table-tbody > tr > td {
+  vertical-align: middle;
+  padding: 14px 16px;
+}
+.providers-table .ant-table-tbody > tr:hover > td {
+  background: rgba(4,120,87,0.03);
+}
+
+/* tag tweaks */
+.providers-table .ant-tag {
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+/* small count highlight */
+.list-card .count {
+  color: #065f46;
+  font-weight: 700;
+}
+
+/* loading screen */
+.loading-screen {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+/* responsive tweaks */
+@media (max-width: 768px) {
+  .page-title { font-size: 1.25rem; }
+  .filter-card .ant-card-body, .list-card .ant-card-body { padding: 12px; }
+}
+
+/* minor polish for links inside table */
+.providers-table a {
+  color: #046c4f;
+  text-decoration: none;
+}
+.providers-table a:hover {
+  text-decoration: underline;
+}
+
+/* ensure cards don't feel cramped */
+.filter-card .ant-row, .filter-card .ant-form-item {
+  margin-bottom: 8px;
+}
