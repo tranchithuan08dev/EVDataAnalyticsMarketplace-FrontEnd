@@ -20,7 +20,7 @@ export default function HeroSection() {
               Mua, bán, phân tích dữ liệu hành vi lái xe, pin, sạc, V2G.
             </p>
             <div className="d-flex flex-wrap gap-3">
-              <Button type="primary" size="large" className="btn-primary-custom" href="/explore">
+              <Button type="primary" size="large" className="btn-primary-custom" href="/providerList">
                 Khám phá dữ liệu
               </Button>
               <Button size="large" type="default" href="/provider">
