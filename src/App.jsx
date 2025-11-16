@@ -18,7 +18,7 @@ function App() {
         <Route path="/providerList" element={<DataProviderListPage />} />
         <Route path="/provider/*" element={<ProviderPage />} />
         <Route path="/admin/*" element={<AdminPage />} />
-        <Route path="/providerList" element={<DataProviderListPage />} />
+       
           <Route path="/providerList/comsumer" element={<DataProviderListPageCosumer />} />
         <Route path="/provider/comsumer/:providerId" element={<DataProviderDetail />} />
       </Routes>
