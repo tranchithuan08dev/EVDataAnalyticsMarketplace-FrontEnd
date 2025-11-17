@@ -16,13 +16,43 @@ export default function Login() {
     setError('');
 
     try {
-      // TODO: Gọi API login
-      // const res = await fetch('/api/auth/login', { method: 'POST', body: JSON.stringify(values) });
-      // if (!res.ok) throw new Error('Đăng nhập thất bại');
+      // 🚀 Cập nhật: Gọi API login mới
+      const response = await fetch('https://localhost:7297/api/Auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: values.email, // Gửi email từ form
+          password: values.password, // Gửi password từ form
+        }),
+      });
+
+      if (!response.ok) {
+        // Xử lý lỗi HTTP (ví dụ: 400, 401, 500)
+        const errorData = await response.json(); // Thử đọc body lỗi nếu có
+        throw new Error(errorData.message || 'Email hoặc mật khẩu không đúng.');
+      }
+
+      const data = await response.json();
+
+      // 💾 Cập nhật: Lưu token vào localStorage
+      if (data.token) {
+        localStorage.setItem('authToken', data.token);
+        // Tùy chọn: lưu thêm thông tin người dùng nếu cần
+        // localStorage.setItem('userRole', data.role);
+        // localStorage.setItem('userEmail', data.email);
+      } else {
+        throw new Error('Đăng nhập thành công nhưng không nhận được token.');
+      }
 
       toast.success('Đăng nhập thành công! Đang chuyển hướng...');
-      setTimeout(() => navigate('/dashboard'), 1500);
+      // Chuyển hướng sau một khoảng thời gian ngắn
+      setTimeout(() => navigate('/'), 1500);
+
     } catch (err) {
+      // Xử lý lỗi (API hoặc lỗi không có token)
+      console.error('Lỗi đăng nhập:', err);
       setError(err.message || 'Email hoặc mật khẩu không đúng');
       toast.error('Đăng nhập thất bại');
     } finally {
