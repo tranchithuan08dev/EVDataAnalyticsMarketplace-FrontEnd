@@ -11,6 +11,7 @@ const { Search } = Input;
 const API_URL = 'http://localhost:8000/api/provider/DataProvider';
 const DETAIL_BASE = 'http://localhost:8000/api/provider/Datasets/provider';
 const DATASET_DETAIL_BASE = 'http://localhost:8000/api/provider/Datasets';
+const SUBSCRIBE_API = 'http://localhost:8000/api/consumer/EVDatasets/subscribe'; // API Đăng ký thuê bao
 
 const DataProviderListPage = () => {
   const [form] = Form.useForm();
@@ -32,6 +33,16 @@ const DataProviderListPage = () => {
   const [datasetDetail, setDatasetDetail] = useState(null);
   const [datasetDetailError, setDatasetDetailError] = useState(null);
   const [datasetDetailVisible, setDatasetDetailVisible] = useState(false);
+
+  // === NEW STATES FOR SUBSCRIPTION ===
+  const [rentModalVisible, setRentModalVisible] = useState(false);
+  const [apiKeyModalVisible, setApiKeyModalVisible] = useState(false);
+  const [rentLoading, setRentLoading] = useState(false);
+  const [rentDatasetId, setRentDatasetId] = useState(null);
+  const [rentDatasetTitle, setRentDatasetTitle] = useState('');
+  const [newApiKey, setNewApiKey] = useState(null);
+  const [subscriptionDetails, setSubscriptionDetails] = useState(null);
+  // ===================================
 
   useEffect(() => {
     const fetchData = async () => {
@@ -126,7 +137,7 @@ const DataProviderListPage = () => {
     setDetailError(null);
   };
 
-  // ⭐️ NEW: Get dataset details
+  // Get dataset details
   const openDatasetDetails = async (datasetId) => {
     if (!datasetId) return;
     setDatasetDetail(null);
@@ -151,7 +162,7 @@ const DataProviderListPage = () => {
     setDatasetDetailError(null);
   };
 
-  // ⭐️ Download handler
+  // Download handler
   const handleDownloadDataset = (fileUri, fileName) => {
     if (!fileUri) return;
     // Assuming fileUri is a valid download link
@@ -162,6 +173,61 @@ const DataProviderListPage = () => {
     link.click();
     document.body.removeChild(link);
   };
+  
+  // === NEW RENTAL LOGIC ===
+
+  // 1. Open the rent duration selection modal
+  const openRentModal = (datasetId, datasetTitle) => {
+    setRentDatasetId(datasetId);
+    setRentDatasetTitle(datasetTitle);
+    setRentModalVisible(true);
+  };
+
+  // 2. Handle the subscription POST request
+  const handleSubscribe = async (values) => {
+    const { durationDays } = values;
+    const datasetId = rentDatasetId; 
+    
+    if (!datasetId) {
+      alert("Lỗi: Không tìm thấy ID tập dữ liệu.");
+      return;
+    }
+
+    // Giá thuê: Số ngày * 5000 (theo yêu cầu)
+    const priceUnit = 5000; 
+    const recurringPrice = durationDays * priceUnit;
+
+    // Lấy consumerOrgId: Sử dụng giá trị placeholder theo yêu cầu vì không có sẵn trong ngữ cảnh hiện tại.
+    // Trong môi trường thực, giá trị này sẽ được lấy từ bối cảnh người dùng đang đăng nhập.
+    const consumerOrgId = providerDetail?.provider?.organizationId || providerDetail?.provider?.providerId || "mock-consumer-org-id-fallback";
+    const payload = {
+      consumerOrgId: consumerOrgId,
+      datasetId: datasetId,
+      recurringPrice: recurringPrice,
+      durationDays: durationDays,
+    };
+    console.log("payload",);
+    
+    setRentLoading(true);
+    try {
+      const res = await axios.post(SUBSCRIBE_API, payload);
+
+      setSubscriptionDetails(res.data);
+      setNewApiKey(res.data.newApiKey);
+
+      setRentModalVisible(false); // Đóng modal chọn ngày
+      setApiKeyModalVisible(true); // Mở modal hiển thị API key
+
+    } catch (err) {
+      console.error('Lỗi khi đăng ký thuê bao:', err);
+      // Giả định cấu trúc lỗi trả về từ API
+      alert(`Đăng ký thuê bao thất bại: ${err.response?.data?.message || err.message}. Vui lòng thử lại.`);
+    } finally {
+      setRentLoading(false);
+    }
+  };
+
+  // =========================
 
   const columns = [
     {
@@ -395,12 +461,27 @@ const DataProviderListPage = () => {
                       hoverable
                       onClick={() => openDatasetDetails(item.datasetId)}
                     >
-                      <Row gutter={16}>
-                        <Col span={24}>
+                      <Row gutter={16} align="middle">
+                        <Col span={18}>
                           <h4 style={{ color: '#046c4f', marginBottom: 8, cursor: 'pointer' }}>
                             <FileOutlined /> {item.title}
                           </h4>
                           <p style={{ color: '#6b7280', marginBottom: 12, fontSize: 13 }}>{item.shortDescription}</p>
+                        </Col>
+                        <Col span={6} style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start' }}>
+                          {/* Nút Thuê đã được chuyển vào đây, gọi openRentModal */}
+                          <Button 
+                            type="primary" 
+                            size="large"
+                            icon={<DownloadOutlined />}
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              openRentModal(item.datasetId, item.title); 
+                            }}
+                            style={{ background: '#047857', borderColor: '#047857' }}
+                          >
+                            Thuê
+                          </Button>
                         </Col>
                       </Row>
                       <Row gutter={16}>
@@ -443,7 +524,7 @@ const DataProviderListPage = () => {
         )}
       </Modal>
 
-      {/* ⭐️ Dataset Detail Drawer */}
+      {/* Dataset Detail Drawer (Không thay đổi) */}
       <Drawer
         title={datasetDetail?.title || 'Chi tiết Tập dữ liệu'}
         placement="right"
@@ -546,7 +627,7 @@ const DataProviderListPage = () => {
                           <Col span={12}>
                             <div className="version-info-item">
                               <span className="label">Phiên bản:</span>
-                              <span className="value">{version.versionLabel}</span>
+                              <span className="value"><strong>{version.versionLabel}</strong></span>
                             </div>
                           </Col>
                           <Col span={12}>
@@ -588,25 +669,16 @@ const DataProviderListPage = () => {
                               type="dashed" 
                               size="small"
                               icon={<DownloadOutlined />}
-                              onClick={() => handleDownloadDataset(version.sampleUri, `${datasetDetail.title}-sample`)}
+                              onClick={() => handleDownloadDataset(version.sampleUri, `${datasetDetail.title}-${version.versionLabel}-sample`)}
                             >
                               Mẫu
                             </Button>
                           )}
-                          <Button 
-                            type="primary" 
-                            size="small"
-                            icon={<DownloadOutlined />}
-                            onClick={() => handleDownloadDataset(version.storageUri, datasetDetail.title)}
-                            style={{ background: '#047857', borderColor: '#047857' }}
-                          >
-                            Tải xuống
-                          </Button>
                           {version.analysisReportUri && (
                             <Button 
                               type="dashed" 
                               size="small"
-                              onClick={() => handleDownloadDataset(version.analysisReportUri, `${datasetDetail.title}-report`)}
+                              onClick={() => handleDownloadDataset(version.analysisReportUri, `${datasetDetail.title}-${version.versionLabel}-report`)}
                             >
                               Báo cáo
                             </Button>
@@ -621,6 +693,109 @@ const DataProviderListPage = () => {
           </>
         )}
       </Drawer>
+
+      {/* === MODAL CHỌN SỐ NGÀY THUÊ === */}
+      <Modal
+        title={`Thuê Tập dữ liệu: ${rentDatasetTitle}`}
+        visible={rentModalVisible}
+        onCancel={() => setRentModalVisible(false)}
+        footer={null}
+        centered
+      >
+        <Form
+          name="rent_duration"
+          onFinish={handleSubscribe}
+          initialValues={{ durationDays: 365 }}
+          layout="vertical"
+        >
+          <Alert
+            message="Lưu ý về Chi phí"
+            description="Giá thuê được tính theo công thức: Số ngày thuê * 5000."
+            type="info"
+            showIcon
+            style={{ marginBottom: 20 }}
+          />
+          <Form.Item
+            label="Số ngày thuê (DurationDays)"
+            name="durationDays"
+           
+          >
+            <Input
+              type="number"
+              
+              placeholder="Ví dụ: 365"
+              size="large"
+            />
+          </Form.Item>
+          <div style={{ textAlign: 'right' }}>
+            <Button 
+              type="default" 
+              onClick={() => setRentModalVisible(false)} 
+              style={{ marginRight: 8 }}
+            >
+              Hủy
+            </Button>
+            <Button 
+              type="primary" 
+              htmlType="submit" 
+              loading={rentLoading}
+              style={{ background: '#047857', borderColor: '#047857' }}
+            >
+              {rentLoading ? 'Đang đăng ký...' : 'Xác nhận Thuê'}
+            </Button>
+          </div>
+        </Form>
+      </Modal>
+
+      {/* === MODAL HIỂN THỊ API KEY CHỈ MỘT LẦN === */}
+      <Modal
+        title="🎉 Đăng ký Thuê bao Thành công!"
+        visible={apiKeyModalVisible}
+        onCancel={() => setApiKeyModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setApiKeyModalVisible(false)}>
+            Đóng
+          </Button>
+        ]}
+        centered
+        width={600}
+      >
+        {newApiKey && subscriptionDetails ? (
+          <>
+            <Alert
+              message="CẢNH BÁO QUAN TRỌNG: API KEY CHỈ HIỂN THỊ MỘT LẦN!"
+              description="Vui lòng sao chép và lưu trữ khóa API này ở nơi an toàn. Khóa này sẽ không được hiển thị lại vì lý do bảo mật."
+              type="warning"
+              showIcon
+              style={{ marginBottom: 20 }}
+            />
+            <Descriptions bordered column={1} size="small">
+              <Descriptions.Item label="API Key Mới">
+                <Input.Password
+                  value={newApiKey}
+                  readOnly
+                  // Giả lập Input.Password luôn hiển thị key ban đầu nhưng có thể ẩn nếu người dùng click (tính năng mặc định của antd)
+                  visibilityToggle={{ visible: true }}
+                  style={{ fontWeight: 'bold', letterSpacing: '2px' }}
+                />
+              </Descriptions.Item>
+              <Descriptions.Item label="Mã Thuê bao">{subscriptionDetails.subscriptionId}</Descriptions.Item>
+              <Descriptions.Item label="Hết hạn">{new Date(subscriptionDetails.expiresAt).toLocaleDateString('vi-VN')}</Descriptions.Item>
+              <Descriptions.Item label="Thông báo">{subscriptionDetails.message}</Descriptions.Item>
+            </Descriptions>
+            <div style={{ marginTop: 15, textAlign: 'right' }}>
+              <Button
+                onClick={() => navigator.clipboard.writeText(newApiKey)}
+                icon={<FileOutlined />}
+              >
+                Sao chép API Key
+              </Button>
+            </div>
+          </>
+        ) : (
+          <Alert type="error" message="Không thể hiển thị khóa API." />
+        )}
+      </Modal>
     </div>
   );
 };
