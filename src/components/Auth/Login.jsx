@@ -16,42 +16,52 @@ export default function Login() {
     setError('');
 
     try {
-      // 🚀 Cập nhật: Gọi API login mới
       const response = await fetch('https://localhost:7297/api/Auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: values.email, // Gửi email từ form
-          password: values.password, // Gửi password từ form
+          email: values.email,
+          password: values.password,
         }),
       });
 
       if (!response.ok) {
-        // Xử lý lỗi HTTP (ví dụ: 400, 401, 500)
-        const errorData = await response.json(); // Thử đọc body lỗi nếu có
+        const errorData = await response.json();
         throw new Error(errorData.message || 'Email hoặc mật khẩu không đúng.');
       }
 
       const data = await response.json();
 
-      // 💾 Cập nhật: Lưu token vào localStorage
+      // ===== LƯU TOKEN + ROLE =====
       if (data.token) {
         localStorage.setItem('authToken', data.token);
-        // Tùy chọn: lưu thêm thông tin người dùng nếu cần
-        // localStorage.setItem('userRole', data.role);
-        // localStorage.setItem('userEmail', data.email);
+
+        if (data.role) {
+          localStorage.setItem('userRole', data.role);
+        }
       } else {
         throw new Error('Đăng nhập thành công nhưng không nhận được token.');
       }
 
       toast.success('Đăng nhập thành công! Đang chuyển hướng...');
-      // Chuyển hướng sau một khoảng thời gian ngắn
-      setTimeout(() => navigate('/'), 1500);
+
+      // ===== ĐIỀU HƯỚNG THEO ROLE (role = số) =====
+      setTimeout(() => {
+        const role =data.role
+        if (role === 'admin') {
+          navigate('/admin');
+        } else if (role === 'provider') {
+          navigate('/provider');
+        } else if (role === 'consumer') {
+          navigate('/providerList/comsumer');
+        } else {
+          navigate('/');
+        }
+      }, 1200);
 
     } catch (err) {
-      // Xử lý lỗi (API hoặc lỗi không có token)
       console.error('Lỗi đăng nhập:', err);
       setError(err.message || 'Email hoặc mật khẩu không đúng');
       toast.error('Đăng nhập thất bại');
