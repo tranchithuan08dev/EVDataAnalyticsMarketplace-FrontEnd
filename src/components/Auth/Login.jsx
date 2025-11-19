@@ -16,7 +16,8 @@ export default function Login() {
     setError('');
 
     try {
-      const response = await fetch('https://localhost:7297/api/Auth/login', {
+      // 🚀 Cập nhật: Gọi API login mới
+      const response = await fetch('http://localhost:8000/api/consumer/api/Auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

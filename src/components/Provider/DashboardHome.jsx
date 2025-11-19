@@ -1,116 +1,54 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Card, Row, Col, Statistic, Table, Tag, Button, Spin, Alert, Empty } from 'antd';
-import { DollarOutlined, DatabaseOutlined, DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
+import { Card, Col, Row, Statistic, Table, Spin, Alert, Typography } from 'antd';
+import { DownloadOutlined, DollarOutlined, DatabaseOutlined } from '@ant-design/icons';
+import moment from 'moment';
 
-// API endpoint
-const REVENUE_API_BASE = 'http://localhost:8000/api/provider/Revenue/dashboard';
-const TEMP_PROVIDER_ID = 'fcf0c8c4-4d5a-45a8-badf-114462567445';
+const { Title } = Typography;
 
-export default function DashboardHome() {
+const API_URL = 'http://localhost:8000/api/provider/Revenue/dashboard/62F3F1A1-5283-4C64-9AB4-00879BE22EFD';
+
+/**
+ * Component hiển thị Bảng điều khiển Doanh thu từ API.
+ */
+const DashboardHome = () => {
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [dashboardData, setDashboardData] = useState(null);
 
-  // Fetch dashboard data
+  // Hook useEffect để thực hiện lời gọi API khi component được mount
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const fetchData = async () => {
       try {
-        setLoading(true);
-        setError(null);
-        
-        // ✅ Thêm config axios giống Swagger
-        const axiosConfig = {
-          method: 'GET',
-          url: `${REVENUE_API_BASE}/${TEMP_PROVIDER_ID}`,
-          headers: {
-            'Accept': '*/*',
-            'Content-Type': 'application/json',
-          },
-          withCredentials: true, // Nếu cần gửi cookie/credentials
-        };
-        
-        console.log('Fetching:', axiosConfig.url);
-        const response = await axios(axiosConfig);
-        console.log('Success:', response.data);
-        setDashboardData(response.data);
+        const response = await axios.get(API_URL);
+        // Lưu dữ liệu vào trạng thái
+        setData(response.data);
       } catch (err) {
-        console.error('Lỗi chi tiết:', {
-          status: err.response?.status,
-          message: err.message,
-          url: err.config?.url,
-          data: err.response?.data,
-        });
-        setError(`Lỗi tải dữ liệu: ${err.response?.status || err.message}`);
+        // Xử lý lỗi
+        console.error("Lỗi khi gọi API:", err);
+        setError("Không thể tải dữ liệu. Vui lòng kiểm tra console để biết chi tiết.");
       } finally {
+        // Dừng trạng thái tải
         setLoading(false);
       }
     };
 
-    fetchDashboardData();
-  }, []);
+    fetchData();
+  }, []); // Mảng phụ thuộc rỗng đảm bảo chỉ chạy một lần khi mount
 
-  // Format currency
-  const formatCurrency = (value) => {
-    if (!value) return '₫0';
-    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M ₫`;
-    if (value >= 1000) return `${(value / 1000).toFixed(0)}K ₫`;
-    return `${value.toFixed(0)} ₫`;
-  };
+  // -----------------------------------------------------
+  // Hiển thị trạng thái tải và lỗi
+  // -----------------------------------------------------
 
-  // Table columns
-  const columns = [
-    {
-      title: 'Tên Dataset',
-      dataIndex: 'datasetTitle',
-      key: 'datasetTitle',
-      render: (text) => <strong style={{ color: '#047857' }}>{text}</strong>,
-    },
-    {
-      title: 'Tải xuống',
-      dataIndex: 'downloadCount',
-      key: 'downloadCount',
-      render: (count) => (
-        <>
-          <DownloadOutlined style={{ marginRight: 8, color: '#047857' }} />
-          {count}
-        </>
-      ),
-      align: 'center',
-    },
-    {
-      title: 'Doanh thu',
-      dataIndex: 'revenue',
-      key: 'revenue',
-      render: (revenue) => (
-        <span style={{ fontWeight: '700', color: '#047857' }}>
-          ${revenue ? revenue.toFixed(2) : '0.00'}
-        </span>
-      ),
-      align: 'right',
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status) => <Tag color="success">{status}</Tag>,
-      align: 'center',
-    },
-  ];
-
-  // Loading state
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-        <Spin 
-          indicator={<LoadingOutlined style={{ fontSize: 32, color: '#047857' }} spin />} 
-          tip="Đang tải dữ liệu dashboard..."
-        />
+      <div style={{ textAlign: 'center', padding: '50px' }}>
+        <Spin size="large" />
+        <p>Đang tải dữ liệu...</p>
       </div>
     );
   }
 
-  // Error state
   if (error) {
     return (
       <Alert
@@ -118,104 +56,140 @@ export default function DashboardHome() {
         description={error}
         type="error"
         showIcon
-        style={{ marginBottom: 16 }}
+        style={{ margin: '20px' }}
       />
     );
   }
 
-  // No data state
-  if (!dashboardData) {
-    return <Empty description="Không có dữ liệu dashboard" />;
+  if (!data) {
+    return (
+      <Alert
+        message="Không có dữ liệu"
+        description="API trả về dữ liệu rỗng."
+        type="info"
+        showIcon
+        style={{ margin: '20px' }}
+      />
+    );
   }
+  
+  // -----------------------------------------------------
+  // Cấu hình Bảng (Table) cho "recentDatasets"
+  // -----------------------------------------------------
+
+  const tableColumns = [
+    {
+      title: 'Tên Tập Dữ Liệu',
+      dataIndex: 'datasetTitle',
+      key: 'datasetTitle',
+    },
+    {
+      title: 'Số Lượt Tải',
+      dataIndex: 'downloadCount',
+      key: 'downloadCount',
+      sorter: (a, b) => a.downloadCount - b.downloadCount,
+      align: 'right',
+    },
+    {
+      title: 'Doanh Thu',
+      dataIndex: 'revenue',
+      key: 'revenue',
+      // Hiển thị dưới dạng tiền tệ
+      render: (text) => `$${text.toFixed(2)}`,
+      sorter: (a, b) => a.revenue - b.revenue,
+      align: 'right',
+    },
+    {
+      title: 'Trạng Thái',
+      dataIndex: 'status',
+      key: 'status',
+      filters: [
+        { text: 'Đã duyệt', value: 'Đã duyệt' },
+        { text: 'Đang chờ', value: 'Đang chờ' },
+        // Thêm các trạng thái khác nếu có
+      ],
+      onFilter: (value, record) => record.status.indexOf(value) === 0,
+    },
+  ];
+
+  // -----------------------------------------------------
+  // Render Bảng điều khiển
+  // -----------------------------------------------------
 
   return (
-    <>
-      <h2 className="mb-4 fw-bold" style={{ color: '#047857' }}>Tổng quan</h2>
-      
-      {/* Statistics Cards */}
-      <Row gutter={16} className="mb-5">
-        <Col xs={24} sm={12} md={6}>
-          <Card 
-            className="stat-card"
-            bordered={false}
-            style={{ borderRadius: 12, boxShadow: '0 2px 8px rgba(4,120,87,0.1)' }}
-          >
+    <div style={{ padding: '24px' }}>
+      <Title level={2}>📊 Bảng Điều Khiển Doanh Thu</Title>
+      <Row gutter={16} style={{ marginBottom: '24px' }}>
+        {/* Thẻ 1: Tổng Doanh Thu */}
+        <Col span={8}>
+          <Card bordered={false}>
             <Statistic
-              title="Doanh thu"
-              value={dashboardData.totalRevenue || 0}
-              prefix={<DollarOutlined style={{ color: '#047857' }} />}
-              suffix=""
-              valueStyle={{ color: '#047857', fontSize: 24, fontWeight: '700' }}
-              formatter={(value) => `$${parseFloat(value).toFixed(2)}`}
+              title="Tổng Doanh Thu"
+              value={data.totalRevenue}
+              precision={2}
+              valueStyle={{ color: '#3f8600' }}
+              prefix={<DollarOutlined />}
+              suffix="USD"
             />
           </Card>
         </Col>
-        
-        <Col xs={24} sm={12} md={6}>
-          <Card 
-            className="stat-card"
-            bordered={false}
-            style={{ borderRadius: 12, boxShadow: '0 2px 8px rgba(4,120,87,0.1)' }}
-          >
+
+        {/* Thẻ 2: Tổng Lượt Tải */}
+        <Col span={8}>
+          <Card bordered={false}>
             <Statistic
-              title="Tập dữ liệu"
-              value={dashboardData.totalDatasets || 0}
-              prefix={<DatabaseOutlined style={{ color: '#047857' }} />}
-              valueStyle={{ color: '#047857', fontSize: 24, fontWeight: '700' }}
+              title="Tổng Lượt Tải"
+              value={data.totalDownloadCount}
+              valueStyle={{ color: '#0052d9' }}
+              prefix={<DownloadOutlined />}
             />
           </Card>
         </Col>
-        
-        <Col xs={24} sm={12} md={6}>
-          <Card 
-            className="stat-card"
-            bordered={false}
-            style={{ borderRadius: 12, boxShadow: '0 2px 8px rgba(4,120,87,0.1)' }}
-          >
+
+        {/* Thẻ 3: Tổng Số Tập Dữ Liệu */}
+        <Col span={8}>
+          <Card bordered={false}>
             <Statistic
-              title="Tải xuống"
-              value={dashboardData.totalDownloadCount || 0}
-              prefix={<DownloadOutlined style={{ color: '#047857' }} />}
-              valueStyle={{ color: '#047857', fontSize: 24, fontWeight: '700' }}
-            />
-          </Card>
-        </Col>
-        
-        <Col xs={24} sm={12} md={6}>
-          <Card 
-            className="stat-card"
-            bordered={false}
-            style={{ borderRadius: 12, boxShadow: '0 2px 8px rgba(4,120,87,0.1)' }}
-          >
-            <Statistic
-              title="Ngày báo cáo"
-              value={new Date(dashboardData.reportDate).toLocaleDateString('vi-VN')}
-              valueStyle={{ color: '#047857', fontSize: 16, fontWeight: '600' }}
+              title="Tổng Số Tập Dữ Liệu"
+              value={data.totalDatasets}
+              valueStyle={{ color: '#d97b00' }}
+              prefix={<DatabaseOutlined />}
             />
           </Card>
         </Col>
       </Row>
 
-      {/* Recent Datasets Table */}
-      <Card 
-        title={
-          <span style={{ color: '#047857', fontWeight: '700', fontSize: 16 }}>
-            Dataset Gần đây
-          </span>
-        }
-        extra={<Button type="link" style={{ color: '#047857' }}>Xem tất cả</Button>}
-        bordered={false}
-        style={{ borderRadius: 12, boxShadow: '0 2px 8px rgba(4,120,87,0.1)' }}
-      >
-        <Table
-          dataSource={dashboardData.recentDatasets || []}
-          columns={columns}
-          pagination={false}
-          rowKey="datasetTitle"
-          locale={{ emptyText: 'Không có dữ liệu' }}
-          className="dashboard-table"
-        />
-      </Card>
-    </>
+      <Row gutter={16} style={{ marginBottom: '24px' }}>
+        {/* Thẻ thông tin bổ sung */}
+        <Col span={24}>
+          <Card>
+            <p>
+              **Thời gian báo cáo:**{' '}
+              {moment(data.reportDate).format('HH:mm:ss ngày DD/MM/YYYY')}
+            </p>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Bảng chi tiết các Tập Dữ Liệu Gần Đây */}
+      <Row>
+        <Col span={24}>
+          <Card
+            title="Tập Dữ Liệu Gần Đây"
+            bordered={false}
+          >
+            <Table
+              columns={tableColumns}
+              dataSource={data.recentDatasets}
+              rowKey="datasetTitle" // Sử dụng datasetTitle làm khóa duy nhất
+              pagination={{ pageSize: 5 }} // Giới hạn 5 hàng mỗi trang
+              scroll={{ x: 'max-content' }}
+            />
+          </Card>
+        </Col>
+      </Row>
+    </div>
   );
-}
+};
+
+export default DashboardHome;

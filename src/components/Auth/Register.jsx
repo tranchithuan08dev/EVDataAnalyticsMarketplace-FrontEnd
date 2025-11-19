@@ -50,7 +50,7 @@ export default function Register() {
 
     try {
       // 🚀 Gọi API register
-      const response = await fetch('https://localhost:7297/api/Auth/register', {
+      const response = await fetch('http://localhost:8000/api/consumer/api/Auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

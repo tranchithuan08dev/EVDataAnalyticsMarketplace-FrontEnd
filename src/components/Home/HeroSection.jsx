@@ -20,12 +20,10 @@ export default function HeroSection() {
               Mua, bán, phân tích dữ liệu hành vi lái xe, pin, sạc, V2G.
             </p>
             <div className="d-flex flex-wrap gap-3">
-              <Button type="primary" size="large" className="btn-primary-custom" href="/providerList">
+              <Button type="primary" size="large" className="btn-primary-custom" href="/providerList/comsumer">
                 Khám phá dữ liệu
               </Button>
-              <Button size="large" type="default" href="/provider">
-                Trở thành nhà cung cấp
-              </Button>
+             
             </div>
             <div className="mt-5 d-flex gap-5 text-muted">
               <div>
