@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   Card, Descriptions, Table, Tag, Typography, Space, Spin, Alert,
-  Button, Modal, List
+  Button, Modal, List, message // 🌟 Đã thêm message 🌟
 } from 'antd';
 import {
   ArrowLeftOutlined, LoadingOutlined, GlobalOutlined,
@@ -14,10 +14,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 
-// API URLs
+// ======================================================
+// CẤU HÌNH API
+// ======================================================
 const DETAIL_PROVIDER_API_BASE_URL = 'http://localhost:8000/api/provider/Datasets/provider/';
 const DETAIL_DATASET_API_BASE_URL = 'http://localhost:8000/api/provider/Datasets';
 const PURCHASE_API_URL = 'http://localhost:8000/api/consumer/EVDatasets/purchase';
+const BUYER_USER_ID = 'B5838779-5BA8-40E0-809E-0B47978C2674'; // Cố định buyerUserId
 
 // ======================================================
 // HÀM TIỆN ÍCH
@@ -75,17 +78,19 @@ const ProviderInfo = ({ provider }) => (
 );
 
 // ======================================================
-// 2. Dataset Detail Modal (với chức năng MUA)
+// 2. Dataset Detail Modal (với chức năng MUA sử dụng Message)
 // ======================================================
-const DatasetDetailModal = ({ datasetId, isModalVisible, handleCancel, buyerOrgId }) => {
+const DatasetDetailModal = ({ 
+    datasetId, 
+    isModalVisible, 
+    handleCancel, 
+    buyerOrgId, 
+    messageApi // 🌟 Truyền messageApi từ component cha 🌟
+}) => {
   const [datasetDetail, setDatasetDetail] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [purchaseLoading, setPurchaseLoading] = useState({});
-  console.log("daaa", buyerOrgId);
-  
-  // Cố định buyerUserId
-  const BUYER_USER_ID = 'B5838779-5BA8-40E0-809E-0B47978C2674';
 
   useEffect(() => {
     if (!isModalVisible || !datasetId) return;
@@ -110,47 +115,50 @@ const DatasetDetailModal = ({ datasetId, isModalVisible, handleCancel, buyerOrgI
   const handleBuyClick = async (version) => {
     const versionId = version.datasetVersionId || version.id;
     if (!versionId) {
-      Modal.error({ title: 'Lỗi', content: 'Không tìm thấy ID phiên bản dữ liệu.' });
+      messageApi.error({ content: 'Không tìm thấy ID phiên bản dữ liệu.', duration: 3 });
       return;
     }
 
     setPurchaseLoading(prev => ({ ...prev, [versionId]: true }));
 
     try {
+      const priceValue = parseFloat(version.pricePerDownload);
       const payload = {
         buyerUserId: BUYER_USER_ID,
         buyerOrgId: buyerOrgId,
         datasetVersionId: versionId,
-        price: parseFloat(version.pricePerDownload),
+        price: priceValue,
         currency: "USD",
         accessDays: 30
       };
-       console.log("Payload", payload);
-       
+      console.log("Payload", payload);
+
       const response = await axios.post(PURCHASE_API_URL, payload);
 
-      Modal.success({
-        title: 'Mua thành công!',
+      // 🌟 Dùng messageApi.success 🌟
+      messageApi.success({
         content: (
-          <div>
-            <p><strong>{datasetDetail.title}</strong></p>
-            <p>Phiên bản: <strong>{version.versionLabel}</strong></p>
-            <p>Giá: <strong>${version.pricePerDownload.toFixed(2)}</strong></p>
-            <p>Truy cập trong <strong>30 ngày</strong></p>
-            {response.data.transactionId && (
-              <p style={{ marginTop: 12, fontSize: 12, color: '#888' }}>
-                Mã giao dịch: <code>{response.data.transactionId}</code>
-              </p>
-            )}
-          </div>
+            <Space direction="vertical" size={2}>
+                <Text strong>✅ Mua thành công!</Text>
+                <Text>Bộ dữ liệu: **{datasetDetail.title}**</Text>
+                <Text>Phiên bản: **{version.versionLabel}**</Text>
+                <Text type="secondary" style={{fontSize: 12}}>Mã GD: <code>{response.data.transactionId || 'N/A'}</code></Text>
+            </Space>
         ),
-        okText: 'Đóng',
+        duration: 5,
+        key: `buy-${versionId}` // Khóa để tránh trùng lặp thông báo
       });
+
+      // Tùy chọn: Thêm logic cập nhật trạng thái đã mua ở đây nếu cần
+
     } catch (err) {
-      const msg = err.response?.data?.message || err.message || 'Không xác định';
-      Modal.error({
-        title: 'Mua thất bại',
-        content: `Lỗi: ${msg}`,
+      const msg = err.response?.data?.message || err.message || 'Lỗi không xác định khi giao dịch.';
+      
+      // 🌟 Dùng messageApi.error 🌟
+      messageApi.error({
+        content: `❌ Mua thất bại. Lỗi: ${msg}`,
+        duration: 5,
+        key: `buy-${versionId}`
       });
     } finally {
       setPurchaseLoading(prev => ({ ...prev, [versionId]: false }));
@@ -192,7 +200,7 @@ const DatasetDetailModal = ({ datasetId, isModalVisible, handleCancel, buyerOrgI
             <Descriptions.Item label="Giấy Phép">{datasetDetail.licenseType}</Descriptions.Item>
             <Descriptions.Item label="Tình Trạng">
               <Tag color={datasetDetail.status === 'public' ? 'success' : 'warning'}>
-                {datasetDetail.status.toUpperCase()}
+                {datasetDetail.status ? datasetDetail.status.toUpperCase() : 'N/A'}
               </Tag>
             </Descriptions.Item>
           </Descriptions>
@@ -203,7 +211,7 @@ const DatasetDetailModal = ({ datasetId, isModalVisible, handleCancel, buyerOrgI
             dataSource={datasetDetail.versions}
             renderItem={version => {
               const versionId = version.datasetVersionId || version.id;
-              const isFree = version.pricePerDownload === 0;
+              const isFree = parseFloat(version.pricePerDownload) === 0;
               return (
                 <List.Item
                   key={versionId}
@@ -215,7 +223,7 @@ const DatasetDetailModal = ({ datasetId, isModalVisible, handleCancel, buyerOrgI
                       onClick={() => handleBuyClick(version)}
                       style={isFree ? { backgroundColor: '#52c41a', borderColor: '#52c41a' } : {}}
                     >
-                      {isFree ? 'Tải miễn phí' : `Mua ($${version.pricePerDownload.toFixed(2)})`}
+                      {isFree ? 'Tải miễn phí' : `Mua ($${parseFloat(version.pricePerDownload).toFixed(2)})`}
                     </Button>
                   ]}
                 >
@@ -275,13 +283,16 @@ const DatasetsTable = ({ datasets, onDatasetClick }) => {
       dataIndex: 'dataTypes',
       key: 'dataTypes',
       width: 180,
-      render: types => (
-        <Space size={[0, 8]} wrap>
-          {Array.isArray(types) ? types.map(type => (
-            <Tag key={type}>{String(type).toUpperCase().replace('_', ' ')}</Tag>
-          )) : <Tag>N/A</Tag>}
-        </Space>
-      ),
+      render: types => {
+        const typesArray = Array.isArray(types) ? types : String(types || '').split(',').map(t => t.trim()).filter(t => t);
+        return (
+          <Space size={[0, 8]} wrap>
+            {typesArray.length > 0 ? typesArray.map(type => (
+              <Tag key={type}>{String(type).toUpperCase().replace('_', ' ')}</Tag>
+            )) : <Tag>N/A</Tag>}
+          </Space>
+        );
+      },
     },
     {
       title: 'Tình Trạng',
@@ -324,6 +335,9 @@ const DatasetsTable = ({ datasets, onDatasetClick }) => {
 const DataProviderDetail = () => {
   const { providerId } = useParams();
   const navigate = useNavigate();
+
+  // 🌟 Khai báo messageApi và contextHolder 🌟
+  const [messageApi, contextHolder] = message.useMessage();
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -402,6 +416,9 @@ const DataProviderDetail = () => {
   // Main UI
   return (
     <div style={{ padding: '24px', background: '#f0f2f5', minHeight: '100vh' }}>
+      {/* 🌟 ĐẶT contextHolder NGAY ĐẦU PHẦN RENDER 🌟 */}
+      {contextHolder}
+
       <Button onClick={() => navigate(-1)} icon={<ArrowLeftOutlined />} style={{ marginBottom: 16 }}>
         Quay lại Danh sách
       </Button>
@@ -415,6 +432,7 @@ const DataProviderDetail = () => {
         isModalVisible={isModalVisible}
         handleCancel={handleModalCancel}
         buyerOrgId={data.provider.organizationId} 
+        messageApi={messageApi} // 🌟 Truyền messageApi xuống component Modal 🌟
       />
     </div>
   );
