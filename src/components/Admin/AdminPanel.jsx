@@ -13,6 +13,9 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
+// thêm CSS theme
+import './AdminPanel.css';
+
 // Toastify
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -71,14 +74,26 @@ export default function AdminPanel() {
   const [securityKeys, setSecurityKeys] = useState([]);
   const [loading, setLoading] = useState({});
 
+  // helper để chuẩn hoá pending dataset
+  const normalizePending = (data = []) => {
+    return (data || []).map((d, i) => ({
+      ...d,
+      key: d.datasetId || `mock-${i}`,
+      title: d.title && d.title.trim().length > 0 ? d.title : (d.datasetTitle || '(No title)'),
+      providerName: d.providerName || d.provider?.organizationName || 'N/A',
+      // dùng submittedAt nếu backend trả tên đó
+      uploadedAt: d.uploadedAt || d.submittedAt || d.createdAt || null,
+    }));
+  };
+
   // Refresh functions
   const refreshPendingDatasets = async () => {
     try {
       const res = await axios.get(ENDPOINTS.pendingDatasets);
       const data = res.data && res.data.length > 0 ? res.data : MOCK_PENDING_DATASETS;
-      setPendingDatasets(data.map((d, i) => ({ ...d, key: d.datasetId || `mock-${i}` })));
+      setPendingDatasets(normalizePending(data));
     } catch {
-      setPendingDatasets(MOCK_PENDING_DATASETS.map(d => ({ ...d, key: d.datasetId })));
+      setPendingDatasets(normalizePending(MOCK_PENDING_DATASETS));
     }
   };
 
@@ -129,9 +144,12 @@ export default function AdminPanel() {
           ]);
           const pop = popRes.data || [];
           setPopularDatasets(pop.map((d, i) => ({ ...d, key: d.datasetId || i })));
+
+          const pend = Array.isArray(pendRes.data) ? pendRes.data : [];
+          setPendingDatasets(normalizePending(pend)); // ← đảm bảo UI có list chuẩn
           setStats(prev => ({
             ...prev,
-            pending: (pendRes.data?.length || MOCK_PENDING_DATASETS.length)
+            pending: (pend.length || MOCK_PENDING_DATASETS.length)
           }));
         } catch {}
       }
@@ -274,15 +292,69 @@ export default function AdminPanel() {
 
     switch (activeTab) {
       case 'dashboard':
+        // thêm bảng hiển thị chi tiết dataset (pending / recent)
+        const datasetColumns = [
+          { title: 'Dataset ID', dataIndex: 'datasetId', key: 'datasetId', width: 220, render: id => id || 'N/A' },
+          { title: 'Title', dataIndex: 'title', key: 'title', render: t => t || '(No title)' },
+          { title: 'Provider', dataIndex: 'providerName', key: 'providerName', width: 180 },
+          { title: 'Submitted / Uploaded', dataIndex: 'uploadedAt', key: 'uploadedAt', width: 170, render: d => d ? new Date(d).toLocaleString('vi-VN') : 'N/A' },
+          { title: 'Red', dataIndex: 'redFlags', key: 'redFlags', width: 70, render: v => <Tag color={v > 0 ? 'red' : 'default'}>{v ?? 0}</Tag> },
+          { title: 'Yellow', dataIndex: 'yellowFlags', key: 'yellowFlags', width: 80, render: v => <Tag color={v > 0 ? 'orange' : 'default'}>{v ?? 0}</Tag> },
+          { title: 'Green', dataIndex: 'greenFlags', key: 'greenFlags', width: 70, render: v => <Tag color={v > 0 ? 'green' : 'default'}>{v ?? 0}</Tag> },
+        ];
+
         return (
           <>
-            <h2 className="mb-4 fw-bold">Tổng quan hệ thống</h2>
-            <Row gutter={16} className="mb-5">
-              <Col xs={12} md={6}><Card><Statistic title="Người dùng" value={1234} prefix={<UserOutlined />} /></Card></Col>
-              <Col xs={12} md={6}><Card><Statistic title="Dataset" value={89} prefix={<DatabaseOutlined />} /></Card></Col>
-              <Col xs={12} md={6}><Card><Statistic title="Doanh thu" value={284750000} prefix="₫" valueStyle={{ color: '#22c55e' }} formatter={v => v.toLocaleString()} /></Card></Col>
-              <Col xs={12} md={6}><Card><Statistic title="Chờ duyệt" value={stats.pending} valueStyle={{ color: '#f59e0b' }} /></Card></Col>
+            <h2 className="mb-4 fw-bold page-title">Tổng quan hệ thống</h2>
+            <Row gutter={16} className="mb-4 stat-row">
+              <Col xs={24} sm={12} md={6}>
+                <Card className="stat-card">
+                  <Statistic title="Người dùng" value={1234} prefix={<UserOutlined />} />
+                </Card>
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <Card className="stat-card">
+                  <Statistic title="Dataset" value={89} prefix={<DatabaseOutlined />} />
+                </Card>
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <Card className="stat-card">
+                  <Statistic title="Doanh thu" value={284750000} prefix="₫" valueStyle={{ color: '#16a34a' }} formatter={v => v.toLocaleString()} />
+                </Card>
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <Card className="stat-card">
+                  <Statistic title="Chờ duyệt" value={stats.pending} valueStyle={{ color: '#f59e0b' }} />
+                </Card>
+              </Col>
             </Row>
+
+            <Card title="Danh sách dataset chờ duyệt / recent" bordered className="mb-4 table-card">
+              <Table
+                className="admin-table"
+                dataSource={pendingDatasets}
+                columns={datasetColumns}
+                rowKey="datasetId"
+                pagination={{ pageSize: 10 }}
+                locale={{ emptyText: 'Không có dataset chờ duyệt' }}
+                scroll={{ x: 1100 }}
+              />
+            </Card>
+
+            <Card title="Dataset nổi bật" bordered className="table-card">
+              <Table
+                className="admin-table"
+                dataSource={popularDatasets}
+                columns={[
+                  { title: 'Tên', dataIndex: 'title', key: 'title' },
+                  { title: 'Mua', dataIndex: 'purchaseCount', key: 'purchaseCount' },
+                  { title: 'Gói', dataIndex: 'subscriptionCount', key: 'subscriptionCount' },
+                  { title: 'Quan tâm', dataIndex: 'totalInterest', key: 'totalInterest' },
+                ]}
+                rowKey="datasetId"
+                pagination={false}
+              />
+            </Card>
           </>
         );
 
@@ -367,13 +439,17 @@ export default function AdminPanel() {
       case 'payment':
         return (
           <>
-            <h2 className="mb-4 fw-bold">Payment - Phân phối doanh thu</h2>
-            <Table dataSource={paymentPending} columns={[
-              { title: 'Payment ID', dataIndex: 'paymentId' },
-              { title: 'Số tiền', dataIndex: 'amount', render: v => v?.toLocaleString() + ' ₫' },
-              { title: 'Ngày thanh toán', dataIndex: 'paidAt', render: d => d ? new Date(d).toLocaleDateString('vi-VN') : 'N/A' },
-              { title: '', render: (_, r) => <Button type="primary" size="small" onClick={() => handleDistributePayment(r.paymentId)}>Phân phối</Button> },
-            ]} />
+            <h2 className="mb-4 fw-bold page-title">Payment - Phân phối doanh thu</h2>
+            <Table
+              className="admin-table"
+              dataSource={paymentPending}
+              columns={[
+                { title: 'Payment ID', dataIndex: 'paymentId' },
+                { title: 'Số tiền', dataIndex: 'amount', render: v => v?.toLocaleString() + ' ₫' },
+                { title: 'Ngày thanh toán', dataIndex: 'paidAt', render: d => d ? new Date(d).toLocaleDateString('vi-VN') : 'N/A' },
+                { title: '', render: (_, r) => <Button className="btn-green" size="small" onClick={() => handleDistributePayment(r.paymentId)}>Phân phối</Button> },
+              ]}
+            />
           </>
         );
 
@@ -423,26 +499,30 @@ export default function AdminPanel() {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider width={240} className="bg-white shadow-sm">
-        <div className="p-4 text-center">
-          <div style={{ fontSize: '2.5rem', color: '#dc3545', fontWeight: 'bold' }}>A</div>
-          <h3 className="mt-2 fw-bold text-danger">Admin Panel</h3>
+      <Sider width={240} className="sidebar">
+        <div className="sidebar-logo">
+          <div className="logo-mark">A</div>
+          <h3 className="logo-text">Admin Panel</h3>
         </div>
-        <Menu mode="inline" selectedKeys={[activeTab]} onClick={e => setActiveTab(e.key)} items={menuItems} style={{ borderRight: 0 }} />
+        <Menu mode="inline" selectedKeys={[activeTab]} onClick={e => setActiveTab(e.key)} items={menuItems} className="sidebar-menu" />
       </Sider>
 
       <Layout>
-        <Header className="bg-white shadow-sm d-flex justify-content-end align-items-center px-4">
-          <Dropdown menu={{ items: [{ key: 'logout', label: 'Đăng xuất', icon: <LogoutOutlined />, onClick: () => { localStorage.clear(); navigate('/login'); } }] }}>
-            <div className="d-flex align-items-center cursor-pointer">
-              <Badge dot><Avatar size={40} style={{ backgroundColor: '#dc3545' }}>AD</Avatar></Badge>
-              <span className="ms-3 fw-bold">Admin</span>
-            </div>
-          </Dropdown>
+        <Header className="app-header">
+          <div className="header-right">
+            <Dropdown menu={{ items: [{ key: 'logout', label: 'Đăng xuất', icon: <LogoutOutlined />, onClick: () => { localStorage.clear(); navigate('/login'); } }] }}>
+              <div className="d-flex align-items-center cursor-pointer">
+                <Badge dot offset={[6, 6]}><Avatar size={40} style={{ backgroundColor: '#16a34a' }}>AD</Avatar></Badge>
+                <span className="ms-3 fw-bold">Admin</span>
+              </div>
+            </Dropdown>
+          </div>
         </Header>
 
-        <Content className="p-5 bg-light">
-          {renderContent()}
+        <Content className="admin-content">
+          <div className="content-inner">
+            {renderContent()}
+          </div>
         </Content>
       </Layout>
 

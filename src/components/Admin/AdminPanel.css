@@ -1,0 +1,78 @@
+/* Theme: white + green accents, professional spacing and shadows */
+
+:root{
+  --brand-green: #16a34a;
+  --muted: #6b7280;
+  --card-bg: #ffffff;
+  --soft-shadow: 0 6px 18px rgba(8, 64, 41, 0.06);
+}
+
+/* Layout */
+.sidebar{
+  background: linear-gradient(180deg, #ffffff, #f8faf7);
+  border-right: 1px solid rgba(6,95,70,0.06);
+  padding-top: 18px;
+}
+.sidebar-logo{
+  text-align: center;
+  padding: 18px 12px;
+}
+.logo-mark{
+  width:56px;height:56px;border-radius:10px;background:var(--brand-green);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:24px;
+}
+.logo-text{ margin-top:8px;color:var(--brand-green);font-weight:700; }
+
+/* Header */
+.app-header{
+  background:#fff;border-bottom:1px solid rgba(6,95,70,0.04);padding:12px 24px;display:flex;justify-content:flex-end;align-items:center;
+}
+.header-right .ant-avatar{ box-shadow: var(--soft-shadow); border: 2px solid rgba(22,163,74,0.08); }
+
+/* Content */
+.admin-content{ background: #f6f9f6; padding: 28px; }
+.content-inner{ max-width: 1200px; margin: 0 auto; }
+
+/* Page title */
+.page-title{ color: var(--brand-green); font-size: 28px; }
+
+/* Stat cards */
+.stat-row .stat-card{
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(22,163,74,0.03), rgba(22,163,74,0.01));
+  border: 1px solid rgba(22,163,74,0.06);
+  box-shadow: var(--soft-shadow);
+  min-height: 96px;
+  display:flex;align-items:center;justify-content:center;
+}
+.stat-card .ant-statistic-title{ color: var(--muted); font-weight:600; }
+.stat-card .ant-statistic-content{ color: var(--brand-green); font-weight:800; font-size:1.5rem; }
+
+/* Tables */
+.table-card, .ant-card{
+  border-radius: 12px;
+  box-shadow: var(--soft-shadow);
+}
+.admin-table .ant-table-thead > tr > th{
+  background: rgba(22,163,74,0.04);
+  color: var(--brand-green);
+  font-weight:700;
+  border-bottom: 1px solid rgba(6,95,70,0.06);
+}
+.admin-table .ant-table-tbody > tr > td{
+  background: #fff;
+}
+.admin-table .ant-table-tbody > tr:hover > td{
+  background: #f8fff5;
+}
+
+/* Buttons */
+.btn-green.ant-btn{
+  background-color: var(--brand-green);
+  border-color: var(--brand-green);
+  color: #fff;
+}
+.btn-green.ant-btn:hover{ background-color: #0f8b3a; border-color:#0f8b3a; }
+
+/* Misc */
+.sidebar-menu .ant-menu-item-selected{ background: rgba(22,163,74,0.06) !important; border-left: 4px solid var(--brand-green); }
+.content-inner .ant-card { margin-bottom: 18px; }
